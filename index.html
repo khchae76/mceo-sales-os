@@ -1,0 +1,1056 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MCEO Value Ladder 与 Customer Lifetime Value 互动计算工具">
+  <title>MCEO Sales OS｜Cloud AI课堂互动版</title>
+  <style>
+    :root {
+      --orange: #f26a21;
+      --orange-deep: #c94b0d;
+      --orange-soft: #fff0e5;
+      --ink: #231f20;
+      --muted: #6f6763;
+      --line: #eadfd7;
+      --paper: #ffffff;
+      --canvas: #fffaf5;
+      --green: #127a52;
+      --red: #b42318;
+      --shadow: 0 18px 60px rgba(78, 45, 24, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 88% 4%, rgba(242,106,33,.13), transparent 26rem),
+        var(--canvas);
+      font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.55;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .wrap { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+    header { padding: 34px 0 22px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      display: grid; place-items: center; width: 44px; height: 44px;
+      border-radius: 14px; color: #fff; background: var(--orange);
+      font-size: 18px; font-weight: 800; letter-spacing: -.04em;
+      box-shadow: 0 10px 24px rgba(242,106,33,.24);
+    }
+    .brand strong { display: block; font-size: 14px; letter-spacing: .08em; }
+    .brand span { display: block; color: var(--muted); font-size: 12px; }
+    .hero { padding: 28px 0 34px; max-width: 820px; }
+    .eyebrow { color: var(--orange-deep); font-weight: 700; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 12px; font-size: clamp(32px, 5vw, 58px); line-height: 1.05; letter-spacing: -.045em; }
+    .hero p { margin: 0; color: var(--muted); font-size: clamp(16px, 2vw, 20px); max-width: 720px; }
+    .shell { background: var(--paper); border: 1px solid var(--line); border-radius: 26px; box-shadow: var(--shadow); overflow: hidden; margin-bottom: 48px; }
+    .steps { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--line); background: #fffdfb; }
+    .step-btn { border: 0; border-right: 1px solid var(--line); background: transparent; padding: 18px 14px; color: var(--muted); text-align: left; }
+    .step-btn:last-child { border-right: 0; }
+    .step-btn b { display: block; font-size: 13px; color: inherit; }
+    .step-btn span { font-size: 12px; }
+    .step-btn.active { color: var(--orange-deep); background: var(--orange-soft); box-shadow: inset 0 -3px 0 var(--orange); }
+    .panel { display: none; padding: clamp(22px, 4vw, 42px); }
+    .panel.active { display: block; }
+    .panel-head { margin-bottom: 24px; }
+    .panel-head h2 { margin: 0 0 6px; font-size: clamp(22px, 3vw, 30px); letter-spacing: -.025em; }
+    .panel-head p { margin: 0; color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .field { min-width: 0; }
+    label { display: block; margin-bottom: 7px; font-size: 13px; font-weight: 700; }
+    .hint { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; font-weight: 400; }
+    input, select {
+      width: 100%; border: 1px solid var(--line); border-radius: 12px;
+      background: #fff; color: var(--ink); padding: 12px 13px; outline: none;
+    }
+    input:focus, select:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(242,106,33,.13); }
+    .section-title { grid-column: 1 / -1; padding-top: 12px; margin-top: 4px; border-top: 1px dashed var(--line); font-size: 13px; color: var(--orange-deep); font-weight: 800; letter-spacing: .06em; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; margin-top: 28px; }
+    .action-right { display: flex; flex-wrap: wrap; gap: 10px; margin-left: auto; }
+    .btn { border: 1px solid var(--line); border-radius: 999px; padding: 11px 19px; background: #fff; color: var(--ink); font-weight: 700; }
+    .btn:hover { border-color: var(--orange); }
+    .btn-primary { color: #fff; border-color: var(--orange); background: var(--orange); }
+    .btn-primary:hover { background: var(--orange-deep); border-color: var(--orange-deep); }
+    .notice { padding: 14px 16px; margin: 20px 0 0; border-radius: 14px; background: var(--orange-soft); color: #7d3713; font-size: 13px; }
+    .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin: 12px 0 18px; }
+    .node { position: relative; border: 1px solid var(--line); border-radius: 18px; padding: 18px; background: #fffdfb; }
+    .node + .node::before { content: "→"; position: absolute; left: -18px; top: 50%; transform: translateY(-50%); color: var(--orange); font-weight: 800; }
+    .node small { display: block; color: var(--muted); }
+    .node strong { display: block; margin: 4px 0; font-size: 24px; letter-spacing: -.03em; }
+    .node span { color: var(--orange-deep); font-size: 13px; font-weight: 700; }
+    .subscription { display: flex; justify-content: space-between; gap: 16px; padding: 16px 18px; border-left: 4px solid var(--orange); border-radius: 10px; background: var(--orange-soft); margin-bottom: 24px; }
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 18px 0 26px; }
+    .metric { border: 1px solid var(--line); border-radius: 18px; padding: 19px; background: #fff; }
+    .metric small { display: block; color: var(--muted); }
+    .metric strong { display: block; margin: 6px 0 2px; font-size: clamp(26px, 3.8vw, 38px); line-height: 1.1; letter-spacing: -.04em; }
+    .metric span { color: var(--muted); font-size: 12px; }
+    .metric.good strong { color: var(--green); }
+    .metric.bad strong { color: var(--red); }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; }
+    table { width: 100%; border-collapse: collapse; min-width: 720px; }
+    th, td { padding: 13px 14px; text-align: right; border-bottom: 1px solid var(--line); font-size: 13px; }
+    th:first-child, td:first-child { text-align: left; }
+    th { color: var(--muted); background: #fffaf6; font-size: 12px; }
+    tr:last-child td { border-bottom: 0; font-weight: 800; }
+    .formula { margin-top: 18px; border-radius: 16px; background: #2a2421; color: #fff; padding: 17px 18px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; overflow-wrap: anywhere; }
+    .error { display: none; color: var(--red); margin-top: 14px; font-size: 13px; font-weight: 700; }
+    .error.show { display: block; }
+    footer { padding: 0 0 36px; color: var(--muted); font-size: 12px; text-align: center; }
+    .toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; background: var(--ink); color: #fff; border-radius: 999px; padding: 10px 16px; transition: .2s ease; font-size: 13px; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .module-nav { display: flex; gap: 8px; flex-wrap: wrap; padding: 4px 0 18px; }
+    .module-tab { border: 1px solid var(--line); border-radius: 999px; padding: 10px 16px; background: #fff; color: var(--muted); font-weight: 700; }
+    .module-tab.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+    .student-bar { display: grid; grid-template-columns: 1.2fr .8fr auto; gap: 12px; align-items: end; margin: 0 0 18px; padding: 16px; border: 1px solid var(--line); border-radius: 18px; background: #fff; }
+    .student-bar .field label { margin-bottom: 5px; }
+    .student-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+    .student-actions .btn { padding: 9px 14px; font-size: 13px; }
+    .cloud-bar { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end; margin: 0 0 14px; padding: 16px; border: 1px solid var(--line); border-radius: 18px; background: var(--ink); color: #fff; }
+    .cloud-login { display: grid; grid-template-columns: minmax(220px, 360px) auto; gap: 8px; align-items: end; }
+    .cloud-login label { color: #fff; }
+    .cloud-login input { background: #fff; }
+    .cloud-account { display: none; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+    .cloud-account.show { display: flex; }
+    .cloud-email { font-size: 13px; color: #ffe1cf; }
+    .cloud-status { grid-column: 1 / -1; color: #ddd; font-size: 12px; }
+    .cloud-bar .btn { padding: 9px 14px; font-size: 13px; }
+    .atass-grid { display: grid; gap: 14px; }
+    .atass-card { display: grid; grid-template-columns: 170px 1fr; gap: 18px; padding: 20px; border: 1px solid var(--line); border-radius: 20px; background: #fff; }
+    .atass-code { color: var(--orange-deep); font-size: 30px; font-weight: 900; line-height: 1; }
+    .atass-code span { display: block; margin-top: 7px; color: var(--ink); font-size: 15px; line-height: 1.3; }
+    .atass-code small { display: block; margin-top: 7px; color: var(--muted); font-size: 12px; font-weight: 400; line-height: 1.45; }
+    .atass-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .atass-fields .wide { grid-column: 1 / -1; }
+    .module { display: none; }
+    .module.active { display: block; }
+    .handover { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 0 24px; }
+    .handover div { border: 1px solid var(--line); border-radius: 14px; padding: 13px; background: #fffdfb; }
+    .handover small { display: block; color: var(--muted); }
+    .handover strong { display: block; margin-top: 3px; }
+    .disc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0 24px; }
+    .disc-choice { border: 1px solid var(--line); border-radius: 15px; padding: 14px; background: #fff; text-align: left; }
+    .disc-choice b { display: block; font-size: 20px; }
+    .disc-choice span { color: var(--muted); font-size: 12px; }
+    .disc-choice.active { border-color: var(--orange); background: var(--orange-soft); box-shadow: inset 0 0 0 1px var(--orange); }
+    .framework-list { display: grid; gap: 12px; }
+    .framework-item { border: 1px solid var(--line); border-radius: 18px; padding: 18px; background: #fff; }
+    .framework-top { display: grid; grid-template-columns: 170px 1fr; gap: 16px; align-items: start; margin-bottom: 12px; }
+    .framework-code { color: var(--orange-deep); font-weight: 800; }
+    .framework-tip { color: var(--muted); font-size: 13px; }
+    textarea { width: 100%; min-height: 92px; resize: vertical; border: 1px solid var(--line); border-radius: 12px; padding: 12px 13px; color: var(--ink); background: #fff; font: inherit; outline: none; }
+    textarea:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(242,106,33,.13); }
+    .ai-output { display: none; margin-top: 18px; padding: 18px; border-radius: 16px; background: #2a2421; color: #fff; white-space: pre-wrap; }
+    .ai-output.show { display: block; }
+    .status-line { margin: 12px 0 0; color: var(--muted); font-size: 13px; }
+
+    @media (max-width: 760px) {
+      .wrap { width: min(100% - 20px, 1120px); }
+      header { padding-top: 22px; }
+      .steps { grid-template-columns: repeat(2, 1fr); }
+      .step-btn:nth-child(2) { border-right: 0; }
+      .step-btn:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+      .grid, .metrics, .flow { grid-template-columns: 1fr; }
+      .handover, .disc-grid { grid-template-columns: repeat(2, 1fr); }
+      .student-bar { grid-template-columns: 1fr; }
+      .cloud-bar, .cloud-login { grid-template-columns: 1fr; }
+      .cloud-account { justify-content: stretch; }
+      .cloud-account .btn { flex: 1; }
+      .student-actions { justify-content: stretch; }
+      .student-actions .btn { flex: 1; }
+      .framework-top { grid-template-columns: 1fr; gap: 4px; }
+      .atass-card { grid-template-columns: 1fr; }
+      .atass-fields { grid-template-columns: 1fr; }
+      .atass-fields .wide { grid-column: auto; }
+      .node + .node::before { content: "↓"; left: 50%; top: -18px; transform: translateX(-50%); }
+      .subscription { flex-direction: column; }
+      .actions { flex-direction: column; }
+      .action-right, .actions .btn { width: 100%; }
+      .action-right .btn { flex: 1; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      header, .hero, .steps, .actions, footer { display: none !important; }
+      .wrap { width: 100%; }
+      .shell { border: 0; box-shadow: none; }
+      .panel { display: none !important; }
+      .panel[data-panel="4"] { display: block !important; padding: 0; }
+      .metric, .node, .table-wrap { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header class="wrap">
+    <div class="brand">
+      <div class="brand-mark">M</div>
+      <div><strong>MILLION DOLLAR CEO</strong><span>Business OS™ · Cloud AI Classroom Edition</span></div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <nav class="module-nav" aria-label="MCEO销售系统模块">
+      <button type="button" class="module-tab active" data-module-target="atass">01 ATASS</button>
+      <button type="button" class="module-tab" data-module-target="clv">02 Value Ladder × CLV</button>
+      <button type="button" class="module-tab" data-module-target="closer">03 CLOSER × DISC</button>
+      <button type="button" class="module-tab" data-module-target="objections">04 异议处理 × DISC</button>
+    </nav>
+    <section class="cloud-bar" aria-label="云端账号与存档">
+      <div class="cloud-login" id="cloud-login">
+        <div class="field"><label for="auth-email">Email登录｜无需密码</label><input id="auth-email" type="email" autocomplete="email" placeholder="输入Email，接收Magic Link"></div>
+        <button type="button" class="btn btn-primary" id="auth-send">发送登录链接</button>
+      </div>
+      <div class="cloud-account" id="cloud-account">
+        <span class="cloud-email" id="auth-user"></span>
+        <button type="button" class="btn" id="cloud-save">保存到云端</button>
+        <button type="button" class="btn" id="cloud-load">载入云端记录</button>
+        <button type="button" class="btn" id="auth-signout">登出</button>
+      </div>
+      <div class="cloud-status" id="cloud-status">请先使用Email登录，才能使用AI与跨电脑云端存档。</div>
+    </section>
+    <section class="student-bar" aria-label="学生学习记录">
+      <div class="field"><label for="student-name">学生姓名</label><input id="student-name" type="text" placeholder="请输入姓名"></div>
+      <div class="field"><label for="student-class">班级／场次</label><input id="student-class" type="text" placeholder="例如：C4 July"></div>
+      <div class="student-actions">
+        <button type="button" class="btn" id="export-progress">下载学习记录</button>
+        <button type="button" class="btn" id="import-progress">载入记录</button>
+        <input type="file" id="progress-file" accept="application/json,.json" hidden>
+      </div>
+    </section>
+    <section class="module active" data-module="atass">
+      <section class="hero">
+        <div class="eyebrow">MCEO ATASS Revenue Model™</div>
+        <h1>先设计企业如何赚钱，再设计顾客如何升级。</h1>
+        <p>ATASS是收入地图，不代表每位顾客必须依次购买。完成后，系统会把适合的产品带入Value Ladder与CLV。</p>
+      </section>
+      <section class="shell">
+        <form id="atass-form" class="panel active">
+          <div class="panel-head"><h2>建立五层商业收入模式</h2><p>把人带进来 → 完成主要交易 → 增加客单价值 → 提供完整成果 → 延长顾客关系。</p></div>
+          <div class="grid" style="margin-bottom:18px">
+            <div class="field"><label for="atass-business">企业／品牌名称</label><input id="atass-business" type="text" placeholder="例如：MCEO Beauty"></div>
+            <div class="field"><label for="atass-industry">行业</label><select id="atass-industry"><option>零售</option><option>服务</option><option>教育</option><option>其他</option></select></div>
+            <div class="field"><label for="atass-customer">目标顾客</label><input id="atass-customer" type="text" placeholder="我主要帮助哪一种顾客？"></div>
+            <div class="field"><label for="atass-result">顾客最想得到的结果</label><input id="atass-result" type="text" placeholder="顾客最终想解决什么？"></div>
+          </div>
+          <div class="atass-grid">
+            <article class="atass-card">
+              <div class="atass-code">A<span>ATTRACTION｜引流</span><small>让对的顾客愿意靠近、体验、咨询或留下资料。</small></div>
+              <div class="atass-fields">
+                <div class="field"><label for="atass-attraction-name">引流项目名称</label><input id="atass-attraction-name" type="text" placeholder="例如：皮肤检测体验"></div>
+                <div class="field"><label for="atass-attraction-price">价格（RM）</label><input id="atass-attraction-price" type="number" min="0" step="0.01" value="0"><span class="hint">免费项目填0；不会自动计入CLV营收。</span></div>
+                <div class="field wide"><label for="atass-attraction-purpose">顾客为什么愿意靠近？完成后导向哪里？</label><textarea id="atass-attraction-purpose" placeholder="写下低门槛价值，以及它如何导向主要交易。"></textarea></div>
+              </div>
+            </article>
+            <article class="atass-card">
+              <div class="atass-code">T<span>TRANSACTION｜主要交易</span><small>顾客正式进入收入系统的第一笔主要付费。</small></div>
+              <div class="atass-fields">
+                <div class="field"><label for="atass-transaction-name">主要产品／服务</label><input id="atass-transaction-name" type="text" required placeholder="例如：完整护肤组合"></div>
+                <div class="field"><label for="atass-transaction-price">价格（RM）</label><input id="atass-transaction-price" type="number" min="0" step="0.01" required value="0"></div>
+                <div class="field wide"><label for="atass-transaction-result">这一笔交易解决什么主要问题？</label><textarea id="atass-transaction-result" placeholder="说明顾客付费后得到的具体价值。"></textarea></div>
+              </div>
+            </article>
+            <article class="atass-card">
+              <div class="atass-code">A<span>ADDITION｜附加</span><small>与主要交易平行的加购、升级或交叉销售，不是强迫下一层。</small></div>
+              <div class="atass-fields">
+                <div class="field"><label for="atass-addition-name">附加产品／服务</label><input id="atass-addition-name" type="text" placeholder="例如：修护精华"></div>
+                <div class="field"><label for="atass-addition-price">价格（RM）</label><input id="atass-addition-price" type="number" min="0" step="0.01" value="0"></div>
+                <div class="field wide"><label for="atass-addition-result">它如何让成果更快、更好或更方便？</label><textarea id="atass-addition-result" placeholder="没有增加顾客价值的Addition，只是硬性加购。"></textarea></div>
+              </div>
+            </article>
+            <article class="atass-card">
+              <div class="atass-code">S<span>SOLUTION｜解决方案</span><small>围绕最终成果组合完整路径，而不是把很多产品放在一起。</small></div>
+              <div class="atass-fields">
+                <div class="field"><label for="atass-solution-name">完整解决方案</label><input id="atass-solution-name" type="text" placeholder="例如：12周肤质改善方案"></div>
+                <div class="field"><label for="atass-solution-price">价格（RM）</label><input id="atass-solution-price" type="number" min="0" step="0.01" value="0"></div>
+                <div class="field wide"><label for="atass-solution-result">顾客最终获得什么Transformation？</label><textarea id="atass-solution-result" placeholder="写下诊断、执行、支持与最终成果。"></textarea></div>
+              </div>
+            </article>
+            <article class="atass-card">
+              <div class="atass-code">S<span>SUBSCRIPTION｜订阅</span><small>通过补充、维护、会员或持续辅导延长顾客关系。</small></div>
+              <div class="atass-fields">
+                <div class="field"><label for="atass-subscription-name">订阅／持续服务</label><input id="atass-subscription-name" type="text" placeholder="例如：每月补充装"></div>
+                <div class="field"><label for="atass-subscription-price">每期收费（RM）</label><input id="atass-subscription-price" type="number" min="0" step="0.01" value="0"></div>
+                <div class="field wide"><label for="atass-subscription-result">顾客为什么需要持续留下？</label><textarea id="atass-subscription-result" placeholder="写下每期持续得到的价值；不适合订阅可以留空。"></textarea></div>
+              </div>
+            </article>
+          </div>
+          <p class="status-line" id="atass-status">ATASS是收入结构；Value Ladder才决定顾客升级顺序。</p>
+          <div class="ai-output" id="atass-ai-output"></div>
+          <div class="actions">
+            <button type="button" class="btn" id="atass-save">保存ATASS</button>
+            <div class="action-right">
+              <button type="button" class="btn" id="atass-ai">AI检查收入模式</button>
+              <button type="submit" class="btn btn-primary">带入Value Ladder × CLV →</button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </section>
+
+    <section class="module" data-module="clv">
+    <section class="hero">
+      <div class="eyebrow">Value Ladder × Customer Lifetime Value</div>
+      <h1>一个顾客，长期到底值多少钱？</h1>
+      <p>先设计顾客的升级路径，再计算营收、毛利与真正贡献。每一个百分比，都必须知道从哪里来。</p>
+    </section>
+
+    <section class="shell">
+      <nav class="steps" aria-label="计算步骤">
+        <button class="step-btn active" type="button" data-step="1"><b>01 企业资料</b><span>设定顾客基数</span></button>
+        <button class="step-btn" type="button" data-step="2"><b>02 价值阶梯</b><span>逐层升级路径</span></button>
+        <button class="step-btn" type="button" data-step="3"><b>03 成本利润</b><span>毛利、CAC与维护</span></button>
+        <button class="step-btn" type="button" data-step="4"><b>04 CLV结果</b><span>查看完整计算</span></button>
+      </nav>
+
+      <form id="clv-form" novalidate>
+        <section class="panel active" data-panel="1">
+          <div class="panel-head"><h2>先决定从哪一群顾客开始</h2><p>建议使用已经购买入门产品的新顾客作为起始Cohort。</p></div>
+          <div class="grid">
+            <div class="field"><label for="business">企业／品牌名称</label><input id="business" type="text" placeholder="例如：MCEO Beauty"></div>
+            <div class="field"><label for="industry">行业</label><select id="industry"><option>零售</option><option>服务</option><option>教育</option><option>其他</option></select></div>
+            <div class="field"><label for="period">CLV计算周期</label><select id="period"><option>6个月</option><option selected>12个月</option><option>24个月</option><option>36个月</option></select></div>
+            <div class="field"><label for="cohort">起始付费顾客人数</label><input id="cohort" type="number" min="1" step="1" value="100"><span class="hint">课堂规划建议先以100位顾客计算。</span></div>
+            <div class="field"><label for="entry-name">入门产品名称</label><input id="entry-name" type="text" value="基础体验套装"></div>
+            <div class="field"><label for="entry-price">入门产品价格（RM）</label><input id="entry-price" type="number" min="0" step="0.01" value="99"></div>
+          </div>
+          <div class="actions"><button class="btn" type="button" data-module-go="atass">← 返回ATASS</button><button class="btn btn-primary" type="button" data-next="2">继续设计价值阶梯 →</button></div>
+        </section>
+
+        <section class="panel" data-panel="2">
+          <div class="panel-head"><h2>建立顺序型价值阶梯</h2><p>核心顾客从入门顾客转换；高阶顾客再从核心顾客转换。</p></div>
+          <div class="grid">
+            <div class="section-title">CORE｜核心产品</div>
+            <div class="field"><label for="core-name">核心产品名称</label><input id="core-name" type="text" value="完整护肤组合"></div>
+            <div class="field"><label for="core-price">核心产品价格（RM）</label><input id="core-price" type="number" min="0" step="0.01" value="399"></div>
+            <div class="field"><label for="core-rate">入门 → 核心升级率（%）</label><input id="core-rate" type="number" min="0" max="100" step="0.1" value="20"><span class="hint">没有真实数据时，20%只能视为规划假设。</span></div>
+
+            <div class="section-title">PREMIUM｜高阶产品</div>
+            <div class="field"><label for="premium-name">高阶产品名称</label><input id="premium-name" type="text" value="针对性修护方案"></div>
+            <div class="field"><label for="premium-mode">高阶价格属于</label><select id="premium-mode"><option value="additional">额外购买／实际新增收入</option><option value="total">升级后的总价，需要扣除核心产品</option></select></div>
+            <div class="field"><label for="premium-price">高阶产品价格（RM）</label><input id="premium-price" type="number" min="0" step="0.01" value="999"></div>
+            <div class="field"><label for="premium-rate">核心 → 高阶升级率（%）</label><input id="premium-rate" type="number" min="0" max="100" step="0.1" value="20"></div>
+
+            <div class="section-title">ADDITION｜平行加购</div>
+            <div class="field"><label for="add-name">附加产品／服务名称</label><input id="add-name" type="text" value="修护精华"></div>
+            <div class="field"><label for="add-base">加购转换基数</label><select id="add-base"><option value="entry">全部入门顾客</option><option value="core">核心顾客</option><option value="premium">高阶顾客</option></select></div>
+            <div class="field"><label for="add-rate">加购率（%）</label><input id="add-rate" type="number" min="0" max="100" step="0.1" value="20"></div>
+            <div class="field"><label for="add-price">加购价格（RM）</label><input id="add-price" type="number" min="0" step="0.01" value="89"></div>
+
+            <div class="section-title">CONTINUITY｜持续关系</div>
+            <div class="field"><label for="sub-name">订阅／复购产品名称</label><input id="sub-name" type="text" value="每月补充装"></div>
+            <div class="field"><label for="sub-base">订阅转换基数</label><select id="sub-base"><option value="entry">全部入门顾客</option><option value="core">核心顾客</option><option value="premium">高阶顾客</option></select></div>
+            <div class="field"><label for="sub-rate">订阅加入率（%）</label><input id="sub-rate" type="number" min="0" max="100" step="0.1" value="12"></div>
+            <div class="field"><label for="sub-fee">每月订阅费（RM）</label><input id="sub-fee" type="number" min="0" step="0.01" value="129"></div>
+            <div class="field"><label for="sub-months">平均实际付费月数</label><input id="sub-months" type="number" min="0" max="60" step="0.1" value="6"><span class="hint">不要自动假设所有顾客都会订阅12个月。</span></div>
+          </div>
+          <div class="notice">顺序产品逐层计算；平行产品必须选择转换基数；升级补差只计算实际新增收入。</div>
+          <div class="actions"><button class="btn" type="button" data-next="1">← 上一步</button><button class="btn btn-primary" type="button" data-next="3">继续计算成本利润 →</button></div>
+        </section>
+
+        <section class="panel" data-panel="3">
+          <div class="panel-head"><h2>不要把营业额误当成利润</h2><p>每一层可以有不同毛利率，最后再扣除获客和维护成本。</p></div>
+          <div class="grid">
+            <div class="field"><label for="entry-margin">入门产品毛利率（%）</label><input id="entry-margin" type="number" min="0" max="100" step="0.1" value="60"></div>
+            <div class="field"><label for="core-margin">核心产品毛利率（%）</label><input id="core-margin" type="number" min="0" max="100" step="0.1" value="60"></div>
+            <div class="field"><label for="premium-margin">高阶产品毛利率（%）</label><input id="premium-margin" type="number" min="0" max="100" step="0.1" value="60"></div>
+            <div class="field"><label for="add-margin">附加产品毛利率（%）</label><input id="add-margin" type="number" min="0" max="100" step="0.1" value="60"></div>
+            <div class="field"><label for="sub-margin">订阅产品毛利率（%）</label><input id="sub-margin" type="number" min="0" max="100" step="0.1" value="60"></div>
+            <div class="field"><label for="cac">每位新付费顾客CAC（RM）</label><input id="cac" type="number" min="0" step="0.01" value="100"><span class="hint">CAC = 总营销费用 ÷ 新付费顾客人数</span></div>
+            <div class="field"><label for="maintenance">每位顾客平均维护成本（RM）</label><input id="maintenance" type="number" min="0" step="0.01" value="20"><span class="hint">包括售后、客服、赠品、社群与回访等。</span></div>
+          </div>
+          <div class="actions"><button class="btn" type="button" data-next="2">← 上一步</button><button class="btn btn-primary" type="submit">计算我的CLV →</button></div>
+          <p class="error" id="error" role="alert"></p>
+        </section>
+
+        <section class="panel" data-panel="4">
+          <div class="panel-head"><h2 id="result-title">CLV计算结果</h2><p id="result-context">100位顾客 · 12个月</p></div>
+          <div class="flow" aria-label="价值阶梯顾客人数">
+            <div class="node"><small id="entry-node-name">入门产品</small><strong id="entry-count">100人</strong><span id="entry-revenue">RM9,900</span></div>
+            <div class="node"><small id="core-node-name">核心产品</small><strong id="core-count">20人</strong><span id="core-revenue">RM7,980</span></div>
+            <div class="node"><small id="premium-node-name">高阶产品</small><strong id="premium-count">4人</strong><span id="premium-revenue">RM3,996</span></div>
+          </div>
+          <div class="subscription"><strong id="add-node-name">附加产品</strong><span id="add-summary">20人 × RM89 = RM1,780</span></div>
+          <div class="subscription"><strong id="sub-node-name">订阅产品</strong><span id="sub-summary">12人 × RM129 × 6个月 = RM9,288</span></div>
+
+          <div class="metrics">
+            <article class="metric"><small>Revenue CLV｜平均营收价值</small><strong id="revenue-clv">RM311.64</strong><span id="total-revenue-note">顾客群总营收 RM31,164</span></article>
+            <article class="metric"><small>Gross Profit CLV｜平均毛利价值</small><strong id="gross-clv">RM186.98</strong><span id="ltv-cac">Gross LTV:CAC = 1.87</span></article>
+            <article class="metric" id="contribution-card"><small>Customer Contribution｜顾客贡献利润</small><strong id="contribution">RM66.98</strong><span>已扣除CAC与维护成本</span></article>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>收入来源</th><th>转换基数</th><th>购买人数</th><th>实际单价</th><th>营业额</th><th>毛利</th></tr></thead>
+              <tbody id="result-rows"></tbody>
+            </table>
+          </div>
+          <div class="formula" id="formula"></div>
+
+          <div class="actions">
+            <button class="btn" type="button" data-next="2">← 修改数据</button>
+            <div class="action-right">
+              <button class="btn" type="button" id="copy">复制结果</button>
+              <button class="btn" type="button" id="print">打印／存PDF</button>
+              <button class="btn btn-primary" type="button" id="recalculate">重新计算</button>
+              <button class="btn btn-primary" type="button" id="go-closer">进入CLOSER × DISC →</button>
+            </div>
+          </div>
+        </section>
+      </form>
+    </section>
+    </section>
+
+    <section class="module" data-module="closer">
+      <section class="hero">
+        <div class="eyebrow">Original CLOSER Framework × DISC</div>
+        <h1>用顾客接受的方式，完成一对一成交。</h1>
+        <p>框架不变；DISC只负责调整每一步的语气、重点、证据与节奏。</p>
+      </section>
+      <section class="shell">
+        <div class="panel active">
+          <div class="panel-head"><h2>本次成交任务</h2><p>以下资料从CLV模块自动带入，也可以在这里补充。</p></div>
+          <div class="handover">
+            <div><small>企业</small><strong id="closer-business">我的企业</strong></div>
+            <div><small>主推产品</small><strong id="closer-offer">尚未选择</strong></div>
+            <div><small>价格</small><strong id="closer-price">RM0</strong></div>
+          </div>
+          <div class="grid">
+            <div class="field"><label for="closer-offer-select">选择本次主推产品</label><select id="closer-offer-select"></select></div>
+            <div class="field"><label for="closer-channel">成交场景</label><select id="closer-channel"><option>Zoom</option><option>面对面</option><option>门店</option><option>WhatsApp</option><option>电话</option></select></div>
+            <div class="field"><label for="closer-customer">目标顾客／背景</label><textarea id="closer-customer" placeholder="这位顾客是谁？目前面对什么情况？"></textarea></div>
+            <div class="field"><label for="closer-goal">顾客想要的结果</label><textarea id="closer-goal" placeholder="她最想改善什么？希望得到什么结果？"></textarea></div>
+          </div>
+
+          <div class="section-title">选择顾客DISC｜D要结果 · I要认同 · S要安全 · C要合理</div>
+          <div class="disc-grid" id="closer-disc-grid">
+            <button type="button" class="disc-choice active" data-disc="D"><b>D</b><span>结果 · 效率 · 掌控</span></button>
+            <button type="button" class="disc-choice" data-disc="I"><b>I</b><span>认同 · 感觉 · 互动</span></button>
+            <button type="button" class="disc-choice" data-disc="S"><b>S</b><span>安全 · 陪伴 · 稳定</span></button>
+            <button type="button" class="disc-choice" data-disc="C"><b>C</b><span>合理 · 数据 · 精确</span></button>
+          </div>
+
+          <div class="framework-list" id="closer-framework"></div>
+          <p class="status-line" id="closer-status">完成六个步骤后，可以保存并进入异议训练。</p>
+          <div class="ai-output" id="closer-ai-output"></div>
+          <div class="actions">
+            <button type="button" class="btn" data-module-go="clv">← 返回CLV</button>
+            <div class="action-right">
+              <button type="button" class="btn" id="closer-save">保存成交地图</button>
+              <button type="button" class="btn" id="closer-ai">AI优化成交地图</button>
+              <button type="button" class="btn btn-primary" id="closer-next">进入异议训练 →</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="module" data-module="objections">
+      <section class="hero">
+        <div class="eyebrow">Customer Objection × DISC</div>
+        <h1>异议不是背稿题，而是诊断题。</h1>
+        <p>保留原版CLARITY、HOOK、SOLUTION、CLOSE；DISC帮助你听懂顾客真正担心什么。</p>
+      </section>
+      <section class="shell">
+        <div class="panel active">
+          <div class="panel-head"><h2>异议训练任务</h2><p>选择顾客原话，再按照原版四步骤完成回应。</p></div>
+          <div class="handover">
+            <div><small>主推产品</small><strong id="objection-offer">尚未选择</strong></div>
+            <div><small>顾客DISC</small><strong id="objection-disc-label">D｜要结果</strong></div>
+            <div><small>成交场景</small><strong id="objection-channel">Zoom</strong></div>
+          </div>
+          <div class="grid">
+            <div class="field"><label for="objection-type">顾客说</label><select id="objection-type"><option>我要考虑一下</option><option>太贵了</option><option>可以便宜一点吗</option><option>别家比较便宜</option><option>我没有Budget</option><option>我要跟另一半／合伙人商量</option><option>你先发资料／Quotation给我</option><option>我没有时间</option><option>我担心没有效果</option><option>我怕自己做不到／跟不上</option><option value="custom">其他异议</option></select></div>
+            <div class="field"><label for="objection-custom">顾客完整原话</label><input id="objection-custom" type="text" placeholder="可以补充顾客当时的原话"></div>
+          </div>
+          <div class="section-title">确认顾客DISC</div>
+          <div class="disc-grid" id="objection-disc-grid">
+            <button type="button" class="disc-choice active" data-disc="D"><b>D</b><span>结果 · 效率 · 掌控</span></button>
+            <button type="button" class="disc-choice" data-disc="I"><b>I</b><span>认同 · 感觉 · 互动</span></button>
+            <button type="button" class="disc-choice" data-disc="S"><b>S</b><span>安全 · 陪伴 · 稳定</span></button>
+            <button type="button" class="disc-choice" data-disc="C"><b>C</b><span>合理 · 数据 · 精确</span></button>
+          </div>
+          <div class="framework-list" id="objection-framework"></div>
+          <p class="status-line" id="objection-status">先澄清，再反省、解决与推进。</p>
+          <div class="ai-output" id="objection-ai-output"></div>
+          <div class="actions">
+            <button type="button" class="btn" data-module-go="closer">← 返回CLOSER</button>
+            <div class="action-right">
+              <button type="button" class="btn" id="objection-save">保存异议地图</button>
+              <button type="button" class="btn" id="objection-copy">复制完整练习</button>
+              <button type="button" class="btn btn-primary" id="objection-ai">AI优化回应</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="wrap">Cloud AI课堂互动版 · 登录后自动同步云端，同时保留当前浏览器备份与下载记录。规划假设必须以真实销售数据更新。</footer>
+  <div class="toast" id="toast" role="status">结果已复制</div>
+
+  <script type="module" src="/src/cloud.js"></script>
+  <script>
+    (function () {
+      const atassForm = document.getElementById("atass-form");
+      const form = document.getElementById("clv-form");
+      const panels = Array.from(document.querySelectorAll("[data-module='clv'] .panel[data-panel]"));
+      const stepButtons = Array.from(document.querySelectorAll(".step-btn"));
+      const error = document.getElementById("error");
+      let latestReport = "";
+      let closerDisc = "D";
+      let objectionDisc = "D";
+
+      const discNames = { D: "D｜要结果", I: "I｜要认同", S: "S｜要安全", C: "C｜要合理" };
+      const discTips = {
+        D: { C: "准时、直接说明目的与时间，不要过度寒暄。", L: "问目标、速度、最大阻碍与结果标准。", O: "强调结果、效率、掌控权和最短路径。", S: "让她判断结果的重要性与行动速度。", E: "简洁给出选择，决定权留给顾客。", R: "确认目标、里程碑、进度和成果。" },
+        I: { C: "热情、真诚赞美，用轻松互动建立感觉。", L: "问感受、愿景、认同与理想画面。", O: "强调体验、转变画面、故事和认同。", S: "让她想象开始后的感受与影响。", E: "保持能量，推动一个具体而有期待的行动。", R: "庆祝、肯定并设计值得分享的体验。" },
+        S: { C: "温和关心，降低压力，说明会一步一步进行。", L: "问担忧、家人、支持与生活节奏。", O: "强调流程、陪伴、保障和稳定。", S: "确认她还缺少什么安全感。", E: "安排安全的小步骤，不突然施压。", R: "设定固定联系、支持与关怀时间。" },
+        C: { C: "正式专业，说明流程并尊重资料需要。", L: "问标准、数据、风险、比较与验证条件。", O: "提供逻辑、数据、条款、比较和风险说明。", S: "确认还有哪项资料未被验证。", E: "明确文件、条款、执行时间与书面记录。", R: "提供报告、记录、标准与进度表。" }
+      };
+      const closerSteps = [
+        ["C", "Connect 破冰", "建立信任与对话权限。"],
+        ["L", "Listen 探索", "找出现况、痛点、后果、欲望和决策条件。"],
+        ["O", "Offer Value 方案", "根据顾客刚才说过的需要开出方案。"],
+        ["S", "Stimulate Decision 决定", "让顾客思考结果的重要性、迫切性与尚缺条件。"],
+        ["E", "Execute Closing 成交", "清楚邀请顾客做决定，并准备Plan B。"],
+        ["R", "Relationship 体验", "强化正确决定并交代成交后的第一步。"]
+      ];
+      const objectionSteps = [
+        ["CLARITY", "细节", "接住情绪、澄清顾客真正考虑什么，并总结确认。"],
+        ["HOOK", "反省", "让顾客重新看见问题、欲望、后果与行动的重要性。"],
+        ["SOLUTION", "解决", "针对真正异议提供证据、选项、流程或保障。"],
+        ["CLOSE", "成交", "确认顾虑是否解决，并推进明确下一步。"]
+      ];
+
+      function byId(id) { return document.getElementById(id); }
+      function showToast(message) {
+        const toast = byId("toast");
+        toast.textContent = message;
+        toast.classList.add("show");
+        setTimeout(function () { toast.classList.remove("show"); }, 1800);
+      }
+      function copyText(value) {
+        if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(value);
+        return new Promise(function (resolve, reject) {
+          const area = document.createElement("textarea"); area.value = value; area.setAttribute("readonly", "");
+          area.style.position = "fixed"; area.style.opacity = "0"; document.body.appendChild(area); area.select();
+          try { document.execCommand("copy") ? resolve() : reject(new Error("无法复制")); }
+          catch (error) { reject(error); }
+          finally { document.body.removeChild(area); }
+        });
+      }
+      function cloudAutosave() {
+        if (window.MCEOCloud && typeof window.MCEOCloud.scheduleSave === "function") window.MCEOCloud.scheduleSave();
+      }
+      function num(id) { return Number(byId(id).value); }
+      function text(id) { return byId(id).value.trim(); }
+      function pct(id) { return num(id) / 100; }
+      function formatNumber(value, decimals) {
+        return value.toLocaleString("en-MY", { minimumFractionDigits: decimals || 0, maximumFractionDigits: decimals == null ? 1 : decimals });
+      }
+      function money(value, decimals) { return "RM" + value.toLocaleString("en-MY", { minimumFractionDigits: decimals || 0, maximumFractionDigits: decimals || 0 }); }
+      function escapeHtml(value) { return String(value).replace(/[&<>'"]/g, function (char) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", "\"": "&quot;" })[char]; }); }
+
+      function atassPayload() {
+        return {
+          framework: "MCEO ATASS Revenue Model",
+          business: { name: text("atass-business"), industry: byId("atass-industry").value, customer: text("atass-customer"), desired_result: text("atass-result") },
+          layers: {
+            attraction: { name: text("atass-attraction-name"), price: num("atass-attraction-price"), purpose: text("atass-attraction-purpose"), role: "lead entry; not automatically CLV revenue" },
+            transaction: { name: text("atass-transaction-name"), price: num("atass-transaction-price"), result: text("atass-transaction-result"), role: "first main paid transaction" },
+            addition: { name: text("atass-addition-name"), price: num("atass-addition-price"), result: text("atass-addition-result"), role: "optional parallel add-on" },
+            solution: { name: text("atass-solution-name"), price: num("atass-solution-price"), result: text("atass-solution-result"), role: "complete result-based solution" },
+            subscription: { name: text("atass-subscription-name"), price: num("atass-subscription-price"), result: text("atass-subscription-result"), role: "recurring relationship" }
+          }
+        };
+      }
+
+      function saveAtass(transfer) {
+        const data = atassPayload();
+        if (!data.layers.transaction.name || data.layers.transaction.price < 0) {
+          byId("atass-status").textContent = "请先填写Transaction主要产品与价格。";
+          byId("atass-transaction-name").focus();
+          return false;
+        }
+        localStorage.setItem("mceo-atass-v1", JSON.stringify(data));
+        cloudAutosave();
+        byId("atass-status").textContent = "ATASS收入模式已保存。";
+        if (transfer) {
+          if (data.business.name) byId("business").value = data.business.name;
+          byId("industry").value = data.business.industry;
+          byId("entry-name").value = data.layers.transaction.name;
+          byId("entry-price").value = data.layers.transaction.price;
+          if (data.layers.solution.name) {
+            byId("core-name").value = data.layers.solution.name;
+            byId("core-price").value = data.layers.solution.price;
+          }
+          if (data.layers.addition.name) {
+            byId("add-name").value = data.layers.addition.name;
+            byId("add-price").value = data.layers.addition.price;
+          }
+          if (data.layers.subscription.name) {
+            byId("sub-name").value = data.layers.subscription.name;
+            byId("sub-fee").value = data.layers.subscription.price;
+          }
+          byId("premium-name").value = "更高阶方案（可选）";
+          byId("premium-price").value = "0";
+          byId("premium-rate").value = "0";
+          saveInputs();
+          showModule("clv");
+          showStep(1);
+        }
+        return true;
+      }
+
+      function restoreAtass() {
+        try {
+          const data = JSON.parse(localStorage.getItem("mceo-atass-v1") || "null");
+          if (!data) return;
+          const values = {
+            "atass-business": data.business && data.business.name,
+            "atass-industry": data.business && data.business.industry,
+            "atass-customer": data.business && data.business.customer,
+            "atass-result": data.business && data.business.desired_result,
+            "atass-attraction-name": data.layers && data.layers.attraction && data.layers.attraction.name,
+            "atass-attraction-price": data.layers && data.layers.attraction && data.layers.attraction.price,
+            "atass-attraction-purpose": data.layers && data.layers.attraction && data.layers.attraction.purpose,
+            "atass-transaction-name": data.layers && data.layers.transaction && data.layers.transaction.name,
+            "atass-transaction-price": data.layers && data.layers.transaction && data.layers.transaction.price,
+            "atass-transaction-result": data.layers && data.layers.transaction && data.layers.transaction.result,
+            "atass-addition-name": data.layers && data.layers.addition && data.layers.addition.name,
+            "atass-addition-price": data.layers && data.layers.addition && data.layers.addition.price,
+            "atass-addition-result": data.layers && data.layers.addition && data.layers.addition.result,
+            "atass-solution-name": data.layers && data.layers.solution && data.layers.solution.name,
+            "atass-solution-price": data.layers && data.layers.solution && data.layers.solution.price,
+            "atass-solution-result": data.layers && data.layers.solution && data.layers.solution.result,
+            "atass-subscription-name": data.layers && data.layers.subscription && data.layers.subscription.name,
+            "atass-subscription-price": data.layers && data.layers.subscription && data.layers.subscription.price,
+            "atass-subscription-result": data.layers && data.layers.subscription && data.layers.subscription.result
+          };
+          Object.keys(values).forEach(function (id) { if (byId(id) && values[id] !== undefined && values[id] !== null) byId(id).value = values[id]; });
+        } catch (_) { /* Keep fresh ATASS form. */ }
+      }
+
+      function showStep(step) {
+        panels.forEach(function (panel) { panel.classList.toggle("active", panel.dataset.panel === String(step)); });
+        stepButtons.forEach(function (button) { button.classList.toggle("active", button.dataset.step === String(step)); });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function allInputsValid() {
+        const numericInputs = Array.from(form.querySelectorAll("input[type='number']"));
+        const invalid = numericInputs.find(function (input) {
+          const value = Number(input.value);
+          const min = input.min === "" ? -Infinity : Number(input.min);
+          const max = input.max === "" ? Infinity : Number(input.max);
+          return !Number.isFinite(value) || value < min || value > max;
+        });
+        if (invalid) {
+          invalid.focus();
+          showStep(Number(invalid.closest(".panel").dataset.panel));
+          error.textContent = "请检查数字范围后再计算。";
+          error.classList.add("show");
+          return false;
+        }
+        error.classList.remove("show");
+        return true;
+      }
+
+      function calculate() {
+        const cohort = num("cohort");
+        const entryPrice = num("entry-price");
+        const coreCount = cohort * pct("core-rate");
+        const corePrice = num("core-price");
+        const premiumCount = coreCount * pct("premium-rate");
+        const listedPremiumPrice = num("premium-price");
+        const premiumPrice = byId("premium-mode").value === "total" ? Math.max(listedPremiumPrice - corePrice, 0) : listedPremiumPrice;
+        const addBaseKey = byId("add-base").value;
+        const addBase = addBaseKey === "core" ? coreCount : addBaseKey === "premium" ? premiumCount : cohort;
+        const addBaseLabel = addBaseKey === "core" ? "核心顾客" : addBaseKey === "premium" ? "高阶顾客" : "全部入门顾客";
+        const addCount = addBase * pct("add-rate");
+        const addPrice = num("add-price");
+        const subBaseKey = byId("sub-base").value;
+        const subBase = subBaseKey === "core" ? coreCount : subBaseKey === "premium" ? premiumCount : cohort;
+        const subBaseLabel = subBaseKey === "core" ? "核心顾客" : subBaseKey === "premium" ? "高阶顾客" : "全部入门顾客";
+        const subCount = subBase * pct("sub-rate");
+        const subFee = num("sub-fee");
+        const subMonths = num("sub-months");
+
+        const entryRevenue = cohort * entryPrice;
+        const coreRevenue = coreCount * corePrice;
+        const premiumRevenue = premiumCount * premiumPrice;
+        const addRevenue = addCount * addPrice;
+        const subRevenue = subCount * subFee * subMonths;
+        const totalRevenue = entryRevenue + coreRevenue + premiumRevenue + addRevenue + subRevenue;
+
+        const entryGross = entryRevenue * pct("entry-margin");
+        const coreGross = coreRevenue * pct("core-margin");
+        const premiumGross = premiumRevenue * pct("premium-margin");
+        const addGross = addRevenue * pct("add-margin");
+        const subGross = subRevenue * pct("sub-margin");
+        const totalGross = entryGross + coreGross + premiumGross + addGross + subGross;
+        const revenueClv = totalRevenue / cohort;
+        const grossClv = totalGross / cohort;
+        const cac = num("cac");
+        const maintenance = num("maintenance");
+        const contribution = grossClv - cac - maintenance;
+        const ratio = cac > 0 ? grossClv / cac : null;
+
+        return {
+          cohort, coreCount, premiumCount, addCount, addBase, addBaseLabel, subCount, subBase, subBaseLabel, subMonths,
+          entryPrice, corePrice, premiumPrice, addPrice, subFee,
+          entryRevenue, coreRevenue, premiumRevenue, addRevenue, subRevenue, totalRevenue,
+          entryGross, coreGross, premiumGross, addGross, subGross, totalGross,
+          revenueClv, grossClv, cac, maintenance, contribution, ratio
+        };
+      }
+
+      function row(name, base, count, price, revenue, gross, frequency) {
+        return "<tr><td>" + escapeHtml(name) + "</td><td>" + escapeHtml(base) + "</td><td>" + formatNumber(count) + "</td><td>" + escapeHtml(frequency ? money(price) + " × " + frequency : money(price)) + "</td><td>" + money(revenue) + "</td><td>" + money(gross) + "</td></tr>";
+      }
+
+      function render() {
+        if (!allInputsValid()) return;
+        const m = calculate();
+        const business = text("business") || "我的企业";
+        byId("result-title").textContent = business + "｜CLV计算结果";
+        byId("result-context").textContent = formatNumber(m.cohort) + "位起始顾客 · " + byId("period").value + " · " + byId("industry").value;
+        byId("entry-node-name").textContent = text("entry-name") || "入门产品";
+        byId("core-node-name").textContent = text("core-name") || "核心产品";
+        byId("premium-node-name").textContent = text("premium-name") || "高阶产品";
+        byId("add-node-name").textContent = text("add-name") || "附加产品";
+        byId("sub-node-name").textContent = text("sub-name") || "订阅产品";
+        byId("entry-count").textContent = formatNumber(m.cohort) + "人";
+        byId("core-count").textContent = formatNumber(m.coreCount) + "人";
+        byId("premium-count").textContent = formatNumber(m.premiumCount) + "人";
+        byId("entry-revenue").textContent = money(m.entryRevenue);
+        byId("core-revenue").textContent = money(m.coreRevenue);
+        byId("premium-revenue").textContent = money(m.premiumRevenue);
+        byId("add-summary").textContent = formatNumber(m.addCount) + "人 × " + money(m.addPrice) + " = " + money(m.addRevenue);
+        byId("sub-summary").textContent = formatNumber(m.subCount) + "人 × " + money(m.subFee) + " × " + formatNumber(m.subMonths) + "个月 = " + money(m.subRevenue);
+        byId("revenue-clv").textContent = money(m.revenueClv, 2);
+        byId("gross-clv").textContent = money(m.grossClv, 2);
+        byId("contribution").textContent = money(m.contribution, 2);
+        byId("total-revenue-note").textContent = "顾客群总营收 " + money(m.totalRevenue);
+        byId("ltv-cac").textContent = "Gross LTV:CAC = " + (m.ratio == null ? "—" : m.ratio.toFixed(2));
+        byId("contribution-card").classList.toggle("good", m.contribution >= 0);
+        byId("contribution-card").classList.toggle("bad", m.contribution < 0);
+
+        byId("result-rows").innerHTML =
+          row(text("entry-name") || "入门产品", "100%起始顾客", m.cohort, m.entryPrice, m.entryRevenue, m.entryGross) +
+          row(text("core-name") || "核心产品", "入门顾客 × " + num("core-rate") + "%", m.coreCount, m.corePrice, m.coreRevenue, m.coreGross) +
+          row(text("premium-name") || "高阶产品", "核心顾客 × " + num("premium-rate") + "%", m.premiumCount, m.premiumPrice, m.premiumRevenue, m.premiumGross) +
+          row(text("add-name") || "附加产品", m.addBaseLabel + " × " + num("add-rate") + "%", m.addCount, m.addPrice, m.addRevenue, m.addGross) +
+          row(text("sub-name") || "订阅产品", m.subBaseLabel + " × " + num("sub-rate") + "%", m.subCount, m.subFee, m.subRevenue, m.subGross, formatNumber(m.subMonths) + "个月") +
+          "<tr><td>总计</td><td>—</td><td>—</td><td>—</td><td>" + money(m.totalRevenue) + "</td><td>" + money(m.totalGross) + "</td></tr>";
+
+        byId("formula").textContent =
+          "Revenue CLV = " + money(m.totalRevenue) + " ÷ " + formatNumber(m.cohort) + " = " + money(m.revenueClv, 2) +
+          "  |  Gross Profit CLV = " + money(m.totalGross) + " ÷ " + formatNumber(m.cohort) + " = " + money(m.grossClv, 2) +
+          "  |  Customer Contribution = " + money(m.grossClv, 2) + " − " + money(m.cac) + " CAC − " + money(m.maintenance) + " = " + money(m.contribution, 2);
+
+        latestReport = [
+          "MCEO Value Ladder × CLV结果",
+          "企业：" + business,
+          "周期：" + byId("period").value,
+          "起始顾客：" + formatNumber(m.cohort) + "人",
+          "入门→核心：" + num("core-rate") + "%（" + formatNumber(m.coreCount) + "人）",
+          "核心→高阶：" + num("premium-rate") + "%（" + formatNumber(m.premiumCount) + "人）",
+          "附加：从" + m.addBaseLabel + "转换" + num("add-rate") + "%（" + formatNumber(m.addCount) + "人）",
+          "订阅：从" + m.subBaseLabel + "转换" + num("sub-rate") + "%（" + formatNumber(m.subCount) + "人）",
+          "顾客群总营收：" + money(m.totalRevenue),
+          "Revenue CLV：" + money(m.revenueClv, 2),
+          "Gross Profit CLV：" + money(m.grossClv, 2),
+          "CAC：" + money(m.cac),
+          "维护成本：" + money(m.maintenance),
+          "Customer Contribution：" + money(m.contribution, 2)
+        ].join("\n");
+
+        const offers = [
+          { stage: "entry", name: text("entry-name") || "入门产品", price: m.entryPrice },
+          { stage: "core", name: text("core-name") || "核心产品", price: m.corePrice },
+          { stage: "premium", name: text("premium-name") || "高阶产品", price: m.premiumPrice },
+          { stage: "addition", name: text("add-name") || "附加产品", price: m.addPrice },
+          { stage: "continuity", name: text("sub-name") || "订阅产品", price: m.subFee }
+        ];
+        localStorage.setItem("mceo-clv-handover-v1", JSON.stringify({
+          business: { name: business, industry: byId("industry").value },
+          period: byId("period").value,
+          offers: offers,
+          clv: { revenue_clv: m.revenueClv, gross_profit_clv: m.grossClv, cac: m.cac, maintenance_cost: m.maintenance, customer_contribution: m.contribution }
+        }));
+        hydrateCloser();
+
+        saveInputs();
+        cloudAutosave();
+        showStep(4);
+      }
+
+      function saveInputs() {
+        const values = {};
+        Array.from(form.querySelectorAll("input, select")).forEach(function (field) { if (field.id) values[field.id] = field.value; });
+        localStorage.setItem("mceo-clv-builder-v1", JSON.stringify(values));
+      }
+
+      function saveStudentMeta() {
+        localStorage.setItem("mceo-student-meta-v1", JSON.stringify({ name: byId("student-name").value.trim(), className: byId("student-class").value.trim() }));
+        cloudAutosave();
+      }
+
+      function restoreStudentMeta() {
+        try {
+          const saved = JSON.parse(localStorage.getItem("mceo-student-meta-v1") || "{}");
+          byId("student-name").value = saved.name || "";
+          byId("student-class").value = saved.className || "";
+        } catch (_) { /* Keep fields blank. */ }
+      }
+
+      function exportProgress() {
+        saveInputs(); saveStudentMeta(); saveAtass(false);
+        if (byId("closer-framework").children.length) saveCloserMap();
+        if (byId("objection-framework").children.length) saveObjectionMap();
+        const keys = ["mceo-student-meta-v1", "mceo-atass-v1", "mceo-clv-builder-v1", "mceo-clv-handover-v1", "mceo-closer-disc-v1", "mceo-objection-disc-v1", "mceo-ai-atass-v1", "mceo-ai-closer-v1", "mceo-ai-objection-v1"];
+        const storage = {};
+        keys.forEach(function (key) { const value = localStorage.getItem(key); if (value !== null) storage[key] = value; });
+        const payload = { format: "MCEO-SALES-OS", version: 3, exportedAt: new Date().toISOString(), storage: storage };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        const link = document.createElement("a");
+        const safeName = (byId("student-name").value.trim() || "student").replace(/[^\w\u3400-\u9fff-]+/g, "-");
+        link.href = URL.createObjectURL(blob); link.download = "MCEO-学习记录-" + safeName + ".json"; link.click();
+        setTimeout(function () { URL.revokeObjectURL(link.href); }, 1000);
+        showToast("学习记录已下载");
+      }
+
+      function importProgress(file) {
+        const reader = new FileReader();
+        reader.onload = function () {
+          try {
+            const payload = JSON.parse(String(reader.result || ""));
+            if (payload.format !== "MCEO-SALES-OS" || !payload.storage || typeof payload.storage !== "object") throw new Error("格式不正确");
+            Object.keys(payload.storage).filter(function (key) { return key.indexOf("mceo-") === 0; }).forEach(function (key) { localStorage.setItem(key, String(payload.storage[key])); });
+            showToast("学习记录已载入，页面即将更新");
+            setTimeout(function () { window.location.reload(); }, 700);
+          } catch (_) { showToast("无法载入：请选择本系统导出的记录"); }
+        };
+        reader.readAsText(file);
+      }
+
+      function restoreInputs() {
+        try {
+          const values = JSON.parse(localStorage.getItem("mceo-clv-builder-v1") || "{}");
+          Object.keys(values).forEach(function (id) { if (byId(id)) byId(id).value = values[id]; });
+        } catch (_) { /* Ignore damaged local data. */ }
+      }
+
+      function showModule(name) {
+        Array.from(document.querySelectorAll("[data-module]")).forEach(function (module) { module.classList.toggle("active", module.dataset.module === name); });
+        Array.from(document.querySelectorAll("[data-module-target]")).forEach(function (button) { button.classList.toggle("active", button.dataset.moduleTarget === name); });
+        if (name === "closer") hydrateCloser();
+        if (name === "objections") hydrateObjections();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function getHandover() {
+        try { return JSON.parse(localStorage.getItem("mceo-clv-handover-v1") || "null"); } catch (_) { return null; }
+      }
+
+      function renderCloserFramework(preservedResponses) {
+        byId("closer-framework").innerHTML = closerSteps.map(function (step) {
+          return '<article class="framework-item"><div class="framework-top"><div class="framework-code">' + step[0] + ' · ' + step[1] + '</div><div><div>' + step[2] + '</div><div class="framework-tip">' + discTips[closerDisc][step[0]] + '</div></div></div><label for="closer-' + step[0] + '">我的问题／表达</label><textarea id="closer-' + step[0] + '" data-closer-step="' + step[0] + '" placeholder="写下你在这一阶段会问什么、怎么说……"></textarea></article>';
+        }).join("");
+        let responses = preservedResponses || null;
+        if (!responses) {
+          try { const saved = JSON.parse(localStorage.getItem("mceo-closer-disc-v1") || "null"); responses = saved && saved.responses ? saved.responses : {}; } catch (_) { responses = {}; }
+        }
+        Object.keys(responses || {}).forEach(function (key) { if (byId("closer-" + key)) byId("closer-" + key).value = responses[key]; });
+      }
+
+      function hydrateCloser() {
+        const handover = getHandover();
+        const offers = handover && handover.offers ? handover.offers : [];
+        byId("closer-business").textContent = handover ? handover.business.name : "请先完成CLV模块";
+        byId("closer-offer-select").innerHTML = offers.length ? offers.map(function (offer, index) { return '<option value="' + index + '">' + escapeHtml(offer.name) + '｜' + money(Number(offer.price)) + '</option>'; }).join("") : '<option value="">请先完成CLV</option>';
+        updateSelectedOffer();
+        if (!byId("closer-framework").children.length) { restoreCloserMap(); renderCloserFramework(); restoreCloserMap(); }
+      }
+
+      function selectedOffer() {
+        const handover = getHandover();
+        if (!handover || !handover.offers || !handover.offers.length) return { name: "尚未选择", price: 0, stage: "" };
+        return handover.offers[Number(byId("closer-offer-select").value) || 0];
+      }
+
+      function updateSelectedOffer() {
+        const offer = selectedOffer();
+        byId("closer-offer").textContent = offer.name;
+        byId("closer-price").textContent = money(Number(offer.price));
+      }
+
+      function closerPayload() {
+        const responses = {};
+        Array.from(document.querySelectorAll("[data-closer-step]")).forEach(function (field) { responses[field.dataset.closerStep] = field.value.trim(); });
+        return { disc: closerDisc, channel: byId("closer-channel").value, customer: byId("closer-customer").value.trim(), goal: byId("closer-goal").value.trim(), offer: selectedOffer(), responses: responses, clv: getHandover() };
+      }
+
+      function saveCloserMap() {
+        localStorage.setItem("mceo-closer-disc-v1", JSON.stringify(closerPayload()));
+        cloudAutosave();
+        byId("closer-status").textContent = "成交地图已保存。";
+      }
+
+      function restoreCloserMap() {
+        try {
+          const saved = JSON.parse(localStorage.getItem("mceo-closer-disc-v1") || "null");
+          if (!saved) return;
+          closerDisc = saved.disc || closerDisc;
+          byId("closer-channel").value = saved.channel || byId("closer-channel").value;
+          byId("closer-customer").value = saved.customer || "";
+          byId("closer-goal").value = saved.goal || "";
+          Object.keys(saved.responses || {}).forEach(function (key) { if (byId("closer-" + key)) byId("closer-" + key).value = saved.responses[key]; });
+          setDisc("closer", closerDisc, false);
+        } catch (_) { /* Keep fresh form. */ }
+      }
+
+      function objectionDiscTip(step) {
+        const tips = {
+          D: { CLARITY: "直接问哪一点未达到结果标准。", HOOK: "让她判断延迟是否影响目标和速度。", SOLUTION: "给最强选项、结果证据与主控权。", CLOSE: "简洁确认并给出明确选择。" },
+          I: { CLARITY: "先认同感受，再问最有感觉和最不确定的部分。", HOOK: "让她想象成果、体验与影响。", SOLUTION: "用真实故事、画面和弹性降低不安。", CLOSE: "保持能量，推进一个具体小行动。" },
+          S: { CLARITY: "温和问她最没有安全感的步骤。", HOOK: "让她思考问题继续存在对生活和家人的影响。", SOLUTION: "说明流程、陪伴、保障与稳定节奏。", CLOSE: "安排安全的小步骤或明确跟进。" },
+          C: { CLARITY: "问还有哪项数据、条款或风险未验证。", HOOK: "用事实比较行动与不行动的差别。", SOLUTION: "提供数据、文件、比较和避险方案。", CLOSE: "确认验证标准并约定明确时间点。" }
+        };
+        return tips[objectionDisc][step];
+      }
+
+      function renderObjectionFramework(preservedResponses) {
+        byId("objection-framework").innerHTML = objectionSteps.map(function (step) {
+          return '<article class="framework-item"><div class="framework-top"><div class="framework-code">' + step[0] + ' · ' + step[1] + '</div><div><div>' + step[2] + '</div><div class="framework-tip">' + objectionDiscTip(step[0]) + '</div></div></div><label for="objection-' + step[0] + '">我的问题／回应</label><textarea id="objection-' + step[0] + '" data-objection-step="' + step[0] + '" placeholder="写下这一阶段你会怎么回应……"></textarea></article>';
+        }).join("");
+        let responses = preservedResponses || null;
+        if (!responses) {
+          try { const saved = JSON.parse(localStorage.getItem("mceo-objection-disc-v1") || "null"); responses = saved && saved.responses ? saved.responses : {}; } catch (_) { responses = {}; }
+        }
+        Object.keys(responses || {}).forEach(function (key) { if (byId("objection-" + key)) byId("objection-" + key).value = responses[key]; });
+      }
+
+      function hydrateObjections() {
+        const closer = closerPayload();
+        byId("objection-offer").textContent = closer.offer.name;
+        byId("objection-channel").textContent = closer.channel;
+        objectionDisc = closer.disc || objectionDisc;
+        setDisc("objection", objectionDisc, false);
+        byId("objection-disc-label").textContent = discNames[objectionDisc];
+        if (!byId("objection-framework").children.length) { restoreObjectionMap(); renderObjectionFramework(); restoreObjectionMap(); }
+      }
+
+      function objectionPayload() {
+        const responses = {};
+        Array.from(document.querySelectorAll("[data-objection-step]")).forEach(function (field) { responses[field.dataset.objectionStep] = field.value.trim(); });
+        return { disc: objectionDisc, objection: byId("objection-custom").value.trim() || byId("objection-type").value, closer: closerPayload(), responses: responses };
+      }
+
+      function saveObjectionMap() {
+        localStorage.setItem("mceo-objection-disc-v1", JSON.stringify(objectionPayload()));
+        cloudAutosave();
+        byId("objection-status").textContent = "异议地图已保存。";
+      }
+
+      function restoreObjectionMap() {
+        try {
+          const saved = JSON.parse(localStorage.getItem("mceo-objection-disc-v1") || "null");
+          if (!saved) return;
+          if (saved.objection) byId("objection-custom").value = saved.objection;
+          Object.keys(saved.responses || {}).forEach(function (key) { if (byId("objection-" + key)) byId("objection-" + key).value = saved.responses[key]; });
+        } catch (_) { /* Keep fresh form. */ }
+      }
+
+      function setDisc(area, disc, rerender) {
+        const preserved = {};
+        if (rerender) {
+          const selector = area === "closer" ? "[data-closer-step]" : "[data-objection-step]";
+          Array.from(document.querySelectorAll(selector)).forEach(function (field) { preserved[area === "closer" ? field.dataset.closerStep : field.dataset.objectionStep] = field.value; });
+        }
+        if (area === "closer") closerDisc = disc; else objectionDisc = disc;
+        Array.from(byId(area + "-disc-grid").querySelectorAll("[data-disc]")).forEach(function (button) { button.classList.toggle("active", button.dataset.disc === disc); });
+        if (area === "objection") byId("objection-disc-label").textContent = discNames[disc];
+        if (rerender) {
+          if (area === "closer") renderCloserFramework(preserved); else renderObjectionFramework(preserved);
+        }
+      }
+
+      async function callAi(engine, context, outputId, button) {
+        const output = byId(outputId);
+        const original = button.textContent;
+        button.disabled = true;
+        button.textContent = "AI分析中…";
+        output.classList.add("show");
+        output.textContent = "正在连接后台AI Engine。";
+        try {
+          if (!window.MCEOCloud || typeof window.MCEOCloud.getAccessToken !== "function") throw new Error("云端登录尚未准备好，请刷新页面");
+          const accessToken = await window.MCEOCloud.getAccessToken();
+          if (!accessToken) throw new Error("请先使用Email登录，才能使用AI");
+          const response = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + accessToken }, body: JSON.stringify({ engine: engine, mode: "build", context: context }) });
+          const data = await response.json();
+          if (!response.ok || !data.ok) throw new Error(data.error || "AI后台尚未启用");
+          output.textContent = data.output;
+          const aiStorageKeys = { atass: "mceo-ai-atass-v1", closer_disc: "mceo-ai-closer-v1", objection_disc: "mceo-ai-objection-v1" };
+          if (aiStorageKeys[engine]) localStorage.setItem(aiStorageKeys[engine], data.output);
+          cloudAutosave();
+        } catch (err) {
+          output.textContent = "AI后台尚未启用：" + err.message + "。\n你仍然可以完成、保存和复制目前的练习。";
+        } finally {
+          button.disabled = false;
+          button.textContent = original;
+        }
+      }
+
+      stepButtons.forEach(function (button) { button.addEventListener("click", function () { if (button.dataset.step === "4") render(); else showStep(button.dataset.step); }); });
+      Array.from(document.querySelectorAll("[data-next]")).forEach(function (button) { button.addEventListener("click", function () { showStep(button.dataset.next); }); });
+      atassForm.addEventListener("submit", function (event) { event.preventDefault(); saveAtass(true); });
+      byId("atass-save").addEventListener("click", function () { if (saveAtass(false)) showToast("ATASS收入模式已保存"); });
+      byId("atass-ai").addEventListener("click", function () { if (saveAtass(false)) callAi("atass", atassPayload(), "atass-ai-output", byId("atass-ai")); });
+      form.addEventListener("submit", function (event) { event.preventDefault(); render(); });
+      byId("recalculate").addEventListener("click", render);
+      byId("go-closer").addEventListener("click", function () { showModule("closer"); });
+      byId("print").addEventListener("click", function () { window.print(); });
+      byId("copy").addEventListener("click", function () {
+        copyText(latestReport).then(function () { showToast("CLV结果已复制"); });
+      });
+      byId("student-name").addEventListener("input", saveStudentMeta);
+      byId("student-class").addEventListener("input", saveStudentMeta);
+      byId("export-progress").addEventListener("click", exportProgress);
+      byId("import-progress").addEventListener("click", function () { byId("progress-file").click(); });
+      byId("progress-file").addEventListener("change", function () { if (this.files && this.files[0]) importProgress(this.files[0]); this.value = ""; });
+      Array.from(document.querySelectorAll("[data-module-target]")).forEach(function (button) { button.addEventListener("click", function () { showModule(button.dataset.moduleTarget); }); });
+      Array.from(document.querySelectorAll("[data-module-go]")).forEach(function (button) { button.addEventListener("click", function () { showModule(button.dataset.moduleGo); }); });
+      byId("closer-offer-select").addEventListener("change", updateSelectedOffer);
+      byId("closer-disc-grid").addEventListener("click", function (event) { const button = event.target.closest("[data-disc]"); if (button) setDisc("closer", button.dataset.disc, true); });
+      byId("objection-disc-grid").addEventListener("click", function (event) { const button = event.target.closest("[data-disc]"); if (button) setDisc("objection", button.dataset.disc, true); });
+      byId("closer-save").addEventListener("click", saveCloserMap);
+      byId("closer-next").addEventListener("click", function () { saveCloserMap(); showModule("objections"); });
+      byId("closer-ai").addEventListener("click", function () { callAi("closer_disc", closerPayload(), "closer-ai-output", byId("closer-ai")); });
+      byId("objection-save").addEventListener("click", saveObjectionMap);
+      byId("objection-ai").addEventListener("click", function () { callAi("objection_disc", objectionPayload(), "objection-ai-output", byId("objection-ai")); });
+      byId("objection-copy").addEventListener("click", function () {
+        const p = objectionPayload();
+        const lines = ["MCEO异议处理 × DISC", "产品：" + p.closer.offer.name, "DISC：" + discNames[p.disc], "顾客原话：" + p.objection];
+        objectionSteps.forEach(function (step) { lines.push(step[0] + " " + step[1] + "：" + (p.responses[step[0]] || "")); });
+        copyText(lines.join("\n")).then(function () { showToast("完整练习已复制"); });
+      });
+      restoreAtass();
+      restoreInputs();
+      restoreStudentMeta();
+      hydrateCloser();
+      const savedAtassAi = localStorage.getItem("mceo-ai-atass-v1");
+      if (savedAtassAi) { byId("atass-ai-output").textContent = savedAtassAi; byId("atass-ai-output").classList.add("show"); }
+      const savedCloserAi = localStorage.getItem("mceo-ai-closer-v1");
+      if (savedCloserAi) { byId("closer-ai-output").textContent = savedCloserAi; byId("closer-ai-output").classList.add("show"); }
+      const savedObjectionAi = localStorage.getItem("mceo-ai-objection-v1");
+      if (savedObjectionAi) { byId("objection-ai-output").textContent = savedObjectionAi; byId("objection-ai-output").classList.add("show"); }
+    })();
+  </script>
+</body>
+</html>
