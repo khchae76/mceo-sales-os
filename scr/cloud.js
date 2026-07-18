@@ -166,10 +166,3 @@ if (!supabaseUrl || !publishableKey) {
     currentUser = null
     handleSession(null)
   })
-
-  supabase.auth.onAuthStateChange((_event, session) => {
-    window.setTimeout(() => handleSession(session), 0)
-  })
-  const { data } = await supabase.auth.getSession()
-  await handleSession(data.session)
-}
