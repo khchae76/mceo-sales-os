@@ -144,6 +144,12 @@
     textarea:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(242,106,33,.13); }
     .ai-output { display: none; margin-top: 18px; padding: 18px; border-radius: 16px; background: #2a2421; color: #fff; white-space: pre-wrap; }
     .ai-output.show { display: block; }
+    .ai-output p { white-space: pre-wrap; margin: 0 0 14px; line-height: 1.6; }
+    .ai-output p:last-child { margin-bottom: 0; }
+    .ai-output table.ai-table { width: 100%; border-collapse: collapse; margin: 0 0 18px; font-size: 13px; }
+    .ai-output table.ai-table th, .ai-output table.ai-table td { border: 1px solid rgba(255,255,255,.18); padding: 8px 10px; text-align: left; vertical-align: top; line-height: 1.5; }
+    .ai-output table.ai-table th { background: rgba(255,255,255,.08); font-weight: 700; }
+    .ai-output table.ai-table tr:nth-child(even) td { background: rgba(255,255,255,.03); }
     .status-line { margin: 12px 0 0; color: var(--muted); font-size: 13px; }
 
     @media (max-width: 760px) {
@@ -979,6 +985,55 @@
         }
       }
 
+      function escapeHtml(str) {
+        return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+
+      function inlineFormatAi(str) {
+        return str
+          .replace(/&lt;br&gt;/g, "<br>")
+          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+      }
+
+      function renderAiOutput(raw) {
+        const lines = escapeHtml(raw).split(/\r?\n/);
+        let html = "";
+        let buffer = [];
+        function flush() {
+          if (buffer.length) {
+            html += "<p>" + inlineFormatAi(buffer.join("<br>")) + "</p>";
+            buffer = [];
+          }
+        }
+        const sepPattern = /^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?$/;
+        let i = 0;
+        while (i < lines.length) {
+          const line = lines[i];
+          const trimmed = line.trim();
+          if (trimmed.indexOf("|") === 0 && lines[i + 1] && sepPattern.test(lines[i + 1].trim())) {
+            flush();
+            const headerCells = trimmed.replace(/^\||\|$/g, "").split("|").map(function (c) { return c.trim(); });
+            let table = "<table class=\"ai-table\"><thead><tr>" +
+              headerCells.map(function (c) { return "<th>" + inlineFormatAi(c) + "</th>"; }).join("") +
+              "</tr></thead><tbody>";
+            i += 2;
+            while (i < lines.length && lines[i].trim().indexOf("|") === 0) {
+              const rowCells = lines[i].trim().replace(/^\||\|$/g, "").split("|").map(function (c) { return c.trim(); });
+              table += "<tr>" + rowCells.map(function (c) { return "<td>" + inlineFormatAi(c) + "</td>"; }).join("") + "</tr>";
+              i++;
+            }
+            table += "</tbody></table>";
+            html += table;
+            continue;
+          }
+          if (trimmed === "") { flush(); i++; continue; }
+          buffer.push(line);
+          i++;
+        }
+        flush();
+        return html;
+      }
+
       async function callAi(engine, context, outputId, button) {
         const output = byId(outputId);
         const original = button.textContent;
@@ -993,7 +1048,7 @@
           const response = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + accessToken }, body: JSON.stringify({ engine: engine, mode: "build", context: context }) });
           const data = await response.json();
           if (!response.ok || !data.ok) throw new Error(data.error || "AI后台尚未启用");
-          output.textContent = data.output;
+          output.innerHTML = renderAiOutput(data.output);
           const aiStorageKeys = { atass: "mceo-ai-atass-v1", closer_disc: "mceo-ai-closer-v1", objection_disc: "mceo-ai-objection-v1" };
           if (aiStorageKeys[engine]) localStorage.setItem(aiStorageKeys[engine], data.output);
           cloudAutosave();
@@ -1004,6 +1059,7 @@
           button.textContent = original;
         }
       }
+      window.renderAiOutput = renderAiOutput;
 
       stepButtons.forEach(function (button) { button.addEventListener("click", function () { if (button.dataset.step === "4") render(); else showStep(button.dataset.step); }); });
       Array.from(document.querySelectorAll("[data-next]")).forEach(function (button) { button.addEventListener("click", function () { showStep(button.dataset.next); }); });
@@ -1043,11 +1099,11 @@
       restoreStudentMeta();
       hydrateCloser();
       const savedAtassAi = localStorage.getItem("mceo-ai-atass-v1");
-      if (savedAtassAi) { byId("atass-ai-output").textContent = savedAtassAi; byId("atass-ai-output").classList.add("show"); }
+      if (savedAtassAi) { byId("atass-ai-output").innerHTML = renderAiOutput(savedAtassAi); byId("atass-ai-output").classList.add("show"); }
       const savedCloserAi = localStorage.getItem("mceo-ai-closer-v1");
-      if (savedCloserAi) { byId("closer-ai-output").textContent = savedCloserAi; byId("closer-ai-output").classList.add("show"); }
+      if (savedCloserAi) { byId("closer-ai-output").innerHTML = renderAiOutput(savedCloserAi); byId("closer-ai-output").classList.add("show"); }
       const savedObjectionAi = localStorage.getItem("mceo-ai-objection-v1");
-      if (savedObjectionAi) { byId("objection-ai-output").textContent = savedObjectionAi; byId("objection-ai-output").classList.add("show"); }
+      if (savedObjectionAi) { byId("objection-ai-output").innerHTML = renderAiOutput(savedObjectionAi); byId("objection-ai-output").classList.add("show"); }
     })();
   </script>
 </body>
